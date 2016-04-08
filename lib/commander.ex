@@ -19,20 +19,24 @@ defmodule Commander do
         args: unquote(args),
         description: unquote(desc),
         commands_module: @module,
-        entry_point: @handler
+        entry_point: @handler,
+        error_handler: @error_handler
       }
     end
   end
 
-  defmacro not_found([do: body]) do
+  defmacro on_error(error_handler) do
     %Macro.Env{module: module} = __CALLER__
-    Module.put_attribute(module, :error_handler, body)
+    Module.put_attribute(module, :error_handler, error_handler)
   end
 
   defmacro dispatch(params, [do: body]) do
     quote do
       @module        unquote(Keyword.get(params, :to))
       @handler       unquote(Keyword.get(params, :handler, :entry_point))
+      @error_handler unquote(Keyword.get(params, :error_handler, nil))
+
+      IO.puts("error_handler #{inspect(@error_handler)}")
 
       unquote(body)
     end
@@ -85,11 +89,16 @@ defmodule Commander do
     end
   end
 
-  defp define_handler(%{entry_point: handler}) do
+  defp define_handler(%{entry_point: handler, error_handler: error_handler, commands_module: module}) do
     quote do
       defp __rescue(chat_id, error, text) do
-        Logger.error(inspect(error))
-        Logger.error(inspect(text))
+        if(unquote(error_handler) == nil) do
+          Logger.error(inspect(error))
+          Logger.error(inspect(text))
+        else
+          apply(unquote(module), unquote(error_handler), [chat_id | [text | error]])
+        end
+
         {:error, error}
       end
 

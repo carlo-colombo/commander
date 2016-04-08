@@ -5,7 +5,7 @@ defmodule CommanderTest do
   def unwatch(_), do: {:unwatch}
   def stop(_, args), do: {:stop, args}
   def watch(_, arg1, arg2), do: {:watch, arg1, arg2}
-  def error_handler(_,_), do: :error_handler
+  def error_handler(_,_,_), do: :error_handler
 
   defmodule TestAPI2 do
     use Commander
@@ -24,6 +24,8 @@ defmodule CommanderTest do
       command "/unwatch", []
       command "/stop", [:stop]
       command "/watch", [:stop, :line]
+
+      on_error :error_handler
     end
   end
 
