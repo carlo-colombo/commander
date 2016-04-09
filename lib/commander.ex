@@ -55,11 +55,11 @@ defmodule Commander do
     fn_name = String.to_atom(cmd)
     case length(args) do
       0 -> quote do
-          defp __dispatch(chat_id, unquote("/#{cmd} ") <> _) do
-            raise "too much argument"
-          end
           defp __dispatch(chat_id, unquote("/#{cmd}")) do
             apply(unquote(module), unquote(fn_name), [chat_id])
+          end
+          defp __dispatch(chat_id, unquote("/#{cmd} ") <> _) do
+            raise "too much argument"
           end
         end
       1 -> quote do
@@ -93,10 +93,14 @@ defmodule Commander do
     quote do
       defp __rescue(chat_id, error, text) do
         if(unquote(error_handler) == nil) do
-          Logger.error(inspect(error))
-          Logger.error(inspect(text))
+          "Error trying to dispatch '#{text}': #{inspect(error)}"
+          |> Logger.error
         else
-          apply(unquote(module), unquote(error_handler), [chat_id | [text | error]])
+          try do
+            apply(unquote(module), unquote(error_handler), [chat_id | [text | error]])
+          rescue
+            _ -> nil
+          end
         end
 
         {:error, error}
