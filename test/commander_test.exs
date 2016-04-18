@@ -44,25 +44,25 @@ defmodule CommanderTest do
   test "dispatch function depending on text" do
 
     assert make_message("/unwatch")
-    |> TestAPI2.entry_point == {:unwatch}
+    |> TestAPI2.entry_point == {:ok, {:unwatch}}
 
     assert make_message("/stop 350")
-    |> TestAPI2.entry_point == {:stop, "350"}
+    |> TestAPI2.entry_point == {:ok, {:stop, "350"}}
   end
 
   test "handling multiple spaces" do
 
     assert make_message("/unwatch     ")
-    |> TestAPI2.entry_point == {:unwatch}
+    |> TestAPI2.entry_point == {:ok,{:unwatch}}
 
     assert make_message("/stop    350")
-    |> TestAPI2.entry_point == {:stop, "350"}
+    |> TestAPI2.entry_point == {:ok,{:stop, "350"}}
 
     assert make_message("/stop    350   ")
-    |> TestAPI2.entry_point == {:stop, "350"}
+    |> TestAPI2.entry_point == {:ok,{:stop, "350"}}
 
     assert make_message("/watch    350      44  ")
-    |> TestAPI2.entry_point == {:watch, "350", "44"}
+    |> TestAPI2.entry_point == {:ok,{:watch, "350", "44"}}
   end
 
   test "handling dispatcing errors, existing command wrong arguments" do

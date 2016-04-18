@@ -85,7 +85,7 @@ defmodule Commander do
 
   defp define_catch_all_dispatch()do
     quote do
-      defp __dispatch(chat_id, text), do: {:ok, text}
+      defp __dispatch(chat_id, text), do: %{:ok => text}
     end
   end
 
@@ -109,7 +109,7 @@ defmodule Commander do
       defp __handler(chat_id, text) do
         Logger.info("Dispatching '#{text}'")
         try do
-          __dispatch(chat_id, text |> String.strip)
+          {:ok, __dispatch(chat_id, text |> String.strip)}
         rescue
           e -> __rescue(chat_id, e, text)
         end
