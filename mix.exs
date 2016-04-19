@@ -3,11 +3,22 @@ defmodule Commander.Mixfile do
 
   def project do
     [app: :commander,
-     version: "0.0.1",
+     version: "0.1.0",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     description: "A macro library to help create telegram bot",
+     name: "Commander",
+     source_url: "https://github.com/carlo-colombo/commander",
+     deps: deps,
+     package: [
+       licenses: ["MIT"],
+       mainteiners: ["Carlo Colombo"],
+       links: %{
+         "Github" => "https://github.com/carlo-colombo/commander",
+         "docs" => "http://hexdocs.pm/commander"
+       }
+     ]]
   end
 
   # Configuration for the OTP application
@@ -27,6 +38,6 @@ defmodule Commander.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:ex_doc, ">= 0.11.4", only: [:dev]}]
   end
 end
