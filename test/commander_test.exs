@@ -6,6 +6,10 @@ defmodule CommanderTest do
   def stop(_, args), do: {:stop, args}
   def watch(_, arg1, arg2), do: {:watch, arg1, arg2}
   def error_handler(_,_,_), do: :error_handler
+  def search(_, q) do
+    IO.inspect("Search #{q}")
+    {:search, q}
+  end
 
   defmodule TestAPI2 do
     use Commander
@@ -29,6 +33,17 @@ defmodule CommanderTest do
     end
   end
 
+  defmodule TestAPI4 do
+    use Commander
+
+    dispatch to: CommanderTest, handler: :entry_point  do
+      command "/search", [:q]
+
+      on_error :error_handler
+    end
+  end
+
+
   test "compile and generate a entry_point/1 function" do
     defmodule TestAPI1 do
       use Commander
@@ -48,6 +63,16 @@ defmodule CommanderTest do
 
     assert make_message("/stop 350")
     |> TestAPI2.entry_point == {:ok, {:stop, "350"}}
+  end
+
+  test "handling space inside a command with a single argument" do
+    assert make_message("/search upper camden lower")
+    |> TestAPI4.entry_point == {:ok, {:search, "upper camden lower"}}
+  end
+
+  test "handling space inside a command with a single argument, trim space around" do
+    assert make_message("/search             upper camden lower  ")
+    |> TestAPI4.entry_point == {:ok, {:search, "upper camden lower"}}
   end
 
   test "handling multiple spaces" do
