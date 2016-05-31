@@ -110,6 +110,10 @@ defmodule CommanderTest do
     |> TestAPI3.entry_point
   end
 
+  test "handling errors, not a text" do
+    {:error, _} = TestAPI3.entry_point(%{"message" => %{"chat" => %{"id" => -138875792, "title" => "Dublin bus", "type" => "group"}, "date" => 1464731615, "from" => %{"first_name" => "Carlo", "id" => 23334928, "last_name" => "Colombo", "username" => "carlo_colombo"}, "message_id" => 458, "new_chat_member" => %{"first_name" => "Dublin Bus Bot", "id" => 239397077, "username" => "dublin_bus_bot"}, "new_chat_participant" => %{"first_name" => "Dublin Bus Bot", "id" => 239397077, "username" => "dublin_bus_bot"}}, "update_id" => 345623833})
+
+  end
   defp make_message(text), do: %{message: %{
                                  chat: %{
                                    id: 42 },

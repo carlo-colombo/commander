@@ -83,7 +83,7 @@ defmodule Commander do
     end
   end
 
-  defp define_catch_all_dispatch()do
+  defp define_catch_all_dispatch do
     quote do
       defp __dispatch(chat_id, text), do: %{:ok => text}
     end
@@ -91,7 +91,7 @@ defmodule Commander do
 
   defp define_handler(%{entry_point: handler, error_handler: error_handler, commands_module: module}) do
     quote do
-      defp __rescue(chat_id, error, text) do
+      defp __rescue(chat_id, error \\ nil, text \\ nil) do
         if(unquote(error_handler) == nil) do
           "Error trying to dispatch '#{text}': #{inspect(error)}"
           |> Logger.error
@@ -109,7 +109,7 @@ defmodule Commander do
       defp __handler(chat_id, text) do
         Logger.info("Dispatching '#{text}'")
         try do
-          {:ok, __dispatch(chat_id, text |> String.strip)}
+          {:ok, __dispatch(chat_id, String.strip(text ||""))}
         rescue
           e -> __rescue(chat_id, e, text)
         end
@@ -120,10 +120,11 @@ defmodule Commander do
       def unquote(handler)(%{message: %{chat: %{id: chat_id}, text: text }} ) do
         __handler(chat_id, text)
       end
-      def unquote(handler)(payload) do
-        Logger.error "Invalid payload"
-        inspect(payload)
-        |> Logger.error
+      def unquote(handler)(%{message: %{chat: %{id: chat_id}}}) do
+        __rescue(chat_id)
+      end
+      def unquote(handler)(%{"message" => %{"chat" => %{"id" => chat_id}}} ) do
+        __rescue(chat_id)
       end
     end
   end
