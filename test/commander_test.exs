@@ -111,11 +111,30 @@ defmodule CommanderTest do
   end
 
   test "handling errors, not a text" do
-    {:error, _} = TestAPI3.entry_point(%{"message" => %{"chat" => %{"id" => -138875792, "title" => "Dublin bus", "type" => "group"}, "date" => 1464731615, "from" => %{"first_name" => "Carlo", "id" => 23334928, "last_name" => "Colombo", "username" => "carlo_colombo"}, "message_id" => 458, "new_chat_member" => %{"first_name" => "Dublin Bus Bot", "id" => 239397077, "username" => "dublin_bus_bot"}, "new_chat_participant" => %{"first_name" => "Dublin Bus Bot", "id" => 239397077, "username" => "dublin_bus_bot"}}, "update_id" => 345623833})
+    {:error, _} = TestAPI3.entry_point(%{"message" => %{"chat" => %{"id" => -138892, "title" => "Dublin bus", "type" => "group"}, "date" => 1464731615, "from" => %{"first_name" => "Carlo", "id" => 23338, "last_name" => "Colombo", "username" => "caoclmb"}, "message_id" => 458, "new_chat_member" => %{"first_name" => "Dublin Bus Bot", "id" => 27077, "username" => "dublin_bus_bot"}, "new_chat_participant" => %{"first_name" => "Dublin Bus Bot", "id" => 239397, "username" => "dublin_bus_bot"}}, "update_id" => 35283})
+
 
   end
+
+  test "handling message with callback_data" do
+    msg = %{callback_query: %{chat_instance: "-5308050",
+                                          data: "/stop 315",
+                                          from: %{first_name: "Carlo", id: 233328, last_name: "Colombo",
+                                                  username: "carlo_colombo"}, id: "100222753899",
+                                          message: %{chat: %{first_name: "Carlo", id: 2334, last_name: "Colombo",
+                                                             type: "private", username: "cal_cmbo"}, date: 1490222776,
+                                                     entities: [%{length: 20, offset: 0, type: "bold"},
+                                                                %{length: 71, offset: 21, type: "pre"}],
+                                                     from: %{first_name: "Dublin Bus", id: 371, username: "testDBbot"},
+                                                     message_id: 1009,
+                                                     text: "315 - Bachelors Walk\n  25B | Due\n  66B | 1 Mins\n  39A | 3 Mins\n   39 | 7 Mins\n   66 | 8 Mins"}},
+                        chosen_inline_result: nil, edited_message: nil, inline_query: nil,
+                        message: nil, update_id: 83609457}
+
+    {:ok, _} = TestAPI3.entry_point(msg)
+  end
   defp make_message(text), do: %{message: %{
-                                 chat: %{
-                                   id: 42 },
-                                 text: text }}
+                                    chat: %{
+                                      id: 42 },
+                                    text: text }}
 end

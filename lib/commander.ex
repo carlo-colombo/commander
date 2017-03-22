@@ -120,6 +120,12 @@ defmodule Commander do
       def unquote(handler)(%{message: %{chat: %{id: chat_id}, text: text }} ) do
         __handler(chat_id, text)
       end
+      def unquote(handler)(%{callback_query: %{data: text, message: %{chat: %{id: chat_id}}}})do
+        __handler(chat_id, text)
+      end
+      def unquote(handler)(%{"callback_query" => %{"data" => text, "message" => %{"chat"=> %{"id" => chat_id}}}})do
+        __handler(chat_id, text)
+      end
       def unquote(handler)(%{message: %{chat: %{id: chat_id}}}) do
         __rescue(chat_id)
       end
