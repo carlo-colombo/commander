@@ -3,7 +3,7 @@ defmodule Commander.Mixfile do
 
   def project do
     [app: :commander,
-     version: "0.1.3",
+     version: "0.1.5",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -12,8 +12,8 @@ defmodule Commander.Mixfile do
      source_url: "https://github.com/carlo-colombo/commander",
      deps: deps,
      package: [
+       maintainers: ["Carlo Colombo"],
        licenses: ["MIT"],
-       mainteiners: ["Carlo Colombo"],
        links: %{
          "Github" => "https://github.com/carlo-colombo/commander",
          "docs" => "http://hexdocs.pm/commander"
