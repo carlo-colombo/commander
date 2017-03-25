@@ -51,30 +51,30 @@ defmodule Commander do
   end
 
   defp define_dispatch(%{command: cmd, args: args, commands_module: module}) do
-    Logger.debug("#{module} /#{cmd} #{inspect(args)}")
+    Logger.debug("#{module} /#{cmd}")
     fn_name = String.to_atom(cmd)
     case length(args) do
       0 -> quote do
-          defp __dispatch(chat_id, unquote("/#{cmd}")) do
-            apply(unquote(module), unquote(fn_name), [chat_id])
+          defp __dispatch(chat_id, unquote("/#{cmd}"), update) do
+            apply(unquote(module), unquote(fn_name), [chat_id, update])
           end
-          defp __dispatch(chat_id, unquote("/#{cmd} ") <> _) do
+          defp __dispatch(chat_id, unquote("/#{cmd} ") <> _, update) do
             raise "too much argument"
           end
         end
       1 -> quote do
-          defp __dispatch(chat_id, unquote("/#{cmd} ") <> arg) do
-            apply(unquote(module), unquote(fn_name), [chat_id, String.strip(arg)])
+          defp __dispatch(chat_id, unquote("/#{cmd} ") <> arg, update) do
+            apply(unquote(module), unquote(fn_name), [chat_id, String.strip(arg), update])
           end
-          defp __dispatch(chat_id, unquote("/#{cmd}")) do
+          defp __dispatch(chat_id, unquote("/#{cmd}"), update) do
             raise "too few arguments"
           end
         end
       _ -> quote do
-          defp __dispatch(chat_id, unquote("/#{cmd} ") <> args = command) do
+          defp __dispatch(chat_id, unquote("/#{cmd} ") <> args = command, update) do
             splitted = String.split(args)
             if length(splitted) == unquote(length(args)) do
-              apply(unquote(module), unquote(fn_name), [chat_id | splitted])
+              apply(unquote(module), unquote(fn_name), [chat_id | splitted ++  [update]])
             else
               raise "invalid number of arguments"
             end
@@ -85,7 +85,7 @@ defmodule Commander do
 
   defp define_catch_all_dispatch do
     quote do
-      defp __dispatch(chat_id, text), do: %{:ok => text}
+      defp __dispatch(chat_id, text, _update), do: %{:ok => text}
     end
   end
 
@@ -93,8 +93,7 @@ defmodule Commander do
     quote do
       defp __rescue(chat_id, error \\ nil, text \\ nil) do
         if(unquote(error_handler) == nil) do
-          "Error trying to dispatch '#{text}': #{inspect(error)}"
-          |> Logger.error
+          "Error trying to dispatch '#{text}': #{inspect(error)}" |> Logger.error
         else
           try do
             apply(unquote(module), unquote(error_handler), [chat_id | [text | error]])
@@ -106,31 +105,31 @@ defmodule Commander do
         {:error, error}
       end
 
-      defp __handler(chat_id, text) do
-        Logger.info("Dispatching '#{text}'")
+      defp __handler(chat_id, text, update) do
+        Logger.info("Dispatching '#{text}' #{inspect(update)}")
         try do
-          {:ok, __dispatch(chat_id, String.strip(text ||""))}
+          {:ok, __dispatch(chat_id, String.strip(text ||""), update)}
         rescue
           e -> __rescue(chat_id, e, text)
         end
       end
-      def unquote(handler)(%{"message" => %{"chat" => %{"id" => chat_id}, "text" => text }} ) do
-        __handler(chat_id, text)
+      def unquote(handler)(%{"message" => %{"chat" => %{"id" => chat_id}, "text" => text }} = update ) do
+        __handler(chat_id, text, update)
       end
-      def unquote(handler)(%{message: %{chat: %{id: chat_id}, text: text }} ) do
-        __handler(chat_id, text)
+      def unquote(handler)(%{message: %{chat: %{id: chat_id}, text: text }} = update  ) do
+        __handler(chat_id, text, update)
       end
-      def unquote(handler)(%{callback_query: %{data: text, message: %{chat: %{id: chat_id}}}})do
-        __handler(chat_id, text)
+      def unquote(handler)(%{callback_query: %{data: text, message: %{chat: %{id: chat_id}}}} = update )do
+        __handler(chat_id, text, update)
       end
-      def unquote(handler)(%{"callback_query" => %{"data" => text, "message" => %{"chat"=> %{"id" => chat_id}}}})do
-        __handler(chat_id, text)
+      def unquote(handler)(%{"callback_query" => %{"data" => text, "message" => %{"chat"=> %{"id" => chat_id}}}} = update )do
+        __handler(chat_id, text, update)
       end
-      def unquote(handler)(%{message: %{chat: %{id: chat_id}}}) do
-        __rescue(chat_id)
+      def unquote(handler)(%{message: %{chat: %{id: chat_id}}} = update ) do
+        __rescue(chat_id, update)
       end
-      def unquote(handler)(%{"message" => %{"chat" => %{"id" => chat_id}}} ) do
-        __rescue(chat_id)
+      def unquote(handler)(%{"message" => %{"chat" => %{"id" => chat_id}}} = update  ) do
+        __rescue(chat_id, update)
       end
     end
   end

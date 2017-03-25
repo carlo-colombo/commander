@@ -2,11 +2,12 @@ defmodule CommanderTest do
   use ExUnit.Case
   doctest Commander
 
-  def unwatch(_), do: {:unwatch}
-  def stop(_, args), do: {:stop, args}
-  def watch(_, arg1, arg2), do: {:watch, arg1, arg2}
+  def unwatch(_, update), do: {:unwatch}
+  def stop(_, args, update), do: {:stop, args}
+  def watch(_, arg1, arg2, update), do: {:watch, arg1, arg2}
   def error_handler(_,_,_), do: :error_handler
-  def search(_, q) do
+  def method(_, update), do: {:method, update}
+  def search(_, q, update) do
     IO.inspect("Search #{q}")
     {:search, q}
   end
@@ -43,6 +44,16 @@ defmodule CommanderTest do
     end
   end
 
+  defmodule TestAPI5 do
+    use Commander
+
+    dispatch to: CommanderTest do
+      command "/method"
+
+
+    end
+  end
+
   test "compile and generate a entry_point/1 function" do
     defmodule TestAPI1 do
       use Commander
@@ -56,7 +67,6 @@ defmodule CommanderTest do
   end
 
   test "dispatch function depending on text" do
-
     assert make_message("/unwatch")
     |> TestAPI2.entry_point == {:ok, {:unwatch}}
 
@@ -132,6 +142,13 @@ defmodule CommanderTest do
 
     {:ok, _} = TestAPI3.entry_point(msg)
   end
+
+  test "pass through the full update to the function" do
+    assert make_message("/method")
+    |> TestAPI5.entry_point == {:ok, {:method, make_message("/method")}}
+  end
+
+
   defp make_message(text), do: %{message: %{
                                     chat: %{
                                       id: 42 },
