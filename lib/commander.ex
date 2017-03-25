@@ -12,7 +12,7 @@ defmodule Commander do
     end
   end
 
-  defmacro command("/"<>cmd, args, desc \\  nil) do
+  defmacro command("/"<>cmd, args \\ [], desc \\  nil) do
     quote do
       @commands %{
         command: unquote(cmd),

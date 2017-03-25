@@ -15,7 +15,7 @@ defmodule CommanderTest do
     use Commander
 
     dispatch to: CommanderTest, handler: :entry_point do
-      command "/unwatch", []
+      command "/unwatch"
       command "/watch", [:stop, :line]
       command "/stop", [:stop]
     end
@@ -25,7 +25,7 @@ defmodule CommanderTest do
     use Commander
 
     dispatch to: CommanderTest, handler: :entry_point  do
-      command "/unwatch", []
+      command "/unwatch"
       command "/stop", [:stop]
       command "/watch", [:stop, :line]
 
@@ -42,7 +42,6 @@ defmodule CommanderTest do
       on_error :error_handler
     end
   end
-
 
   test "compile and generate a entry_point/1 function" do
     defmodule TestAPI1 do
