@@ -20,7 +20,8 @@ defmodule Commander do
         description: unquote(desc),
         commands_module: @module,
         entry_point: @handler,
-        error_handler: @error_handler
+        error_handler: @error_handler,
+        default_handler: @default_handler
       }
     end
   end
@@ -28,6 +29,11 @@ defmodule Commander do
   defmacro on_error(error_handler) do
     %Macro.Env{module: module} = __CALLER__
     Module.put_attribute(module, :error_handler, error_handler)
+  end
+
+  defmacro default(default_handler) do
+    %Macro.Env{module: module} = __CALLER__
+    Module.put_attribute(module, :default_handler, default_handler)
   end
 
   defmacro dispatch(params, [do: body]) do
@@ -47,7 +53,7 @@ defmodule Commander do
 
     [define_handler(commands |> hd)] ++
       Enum.map(commands, &define_dispatch/1) ++
-      [define_catch_all_dispatch]
+      [define_catch_all_dispatch(commands |> hd)]
   end
 
   defp define_dispatch(%{command: cmd, args: args, commands_module: module}) do
@@ -64,7 +70,7 @@ defmodule Commander do
         end
       1 -> quote do
           defp __dispatch(chat_id, unquote("/#{cmd} ") <> arg, update) do
-            apply(unquote(module), unquote(fn_name), [chat_id, String.strip(arg), update])
+            apply(unquote(module), unquote(fn_name), [chat_id, String.trim(arg), update])
           end
           defp __dispatch(chat_id, unquote("/#{cmd}"), update) do
             raise "too few arguments"
@@ -83,9 +89,16 @@ defmodule Commander do
     end
   end
 
-  defp define_catch_all_dispatch do
+  defp define_catch_all_dispatch(%{default_handler: default_handler, commands_module: module}) do
     quote do
-      defp __dispatch(chat_id, text, _update), do: %{:ok => text}
+      defp __dispatch(chat_id, text, update) do
+        if(unquote(default_handler) == nil) do
+          {:ok, text}
+        else
+          Logger.info("Dispatching '#{text}' #{inspect(update)}")
+          apply(unquote(module), unquote(default_handler), [chat_id, text, update ])
+        end
+      end
     end
   end
 

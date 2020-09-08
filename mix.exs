@@ -4,13 +4,13 @@ defmodule Commander.Mixfile do
   def project do
     [app: :commander,
      version: "1.0.0",
-     elixir: "~> 1.2",
+     elixir: "~> 1.10",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      description: "A macro library to help create telegram bot",
      name: "Commander",
      source_url: "https://github.com/carlo-colombo/commander",
-     deps: deps,
+     deps: deps(),
      package: [
        maintainers: ["Carlo Colombo"],
        licenses: ["MIT"],

@@ -12,6 +12,8 @@ defmodule CommanderTest do
     {:search, q}
   end
 
+  def default(_, text, _update), do: {:default, text}
+
   defmodule TestAPI2 do
     use Commander
 
@@ -49,8 +51,16 @@ defmodule CommanderTest do
 
     dispatch to: CommanderTest do
       command "/method"
+    end
+  end
 
+  defmodule TestAPI6 do
+    use Commander
 
+    dispatch to: CommanderTest do
+      command "/method"
+
+      default :default
     end
   end
 
@@ -123,6 +133,11 @@ defmodule CommanderTest do
     {:error, _} = TestAPI3.entry_point(%{"message" => %{"chat" => %{"id" => -138892, "title" => "Dublin bus", "type" => "group"}, "date" => 1464731615, "from" => %{"first_name" => "Carlo", "id" => 23338, "last_name" => "Colombo", "username" => "caoclmb"}, "message_id" => 458, "new_chat_member" => %{"first_name" => "Dublin Bus Bot", "id" => 27077, "username" => "dublin_bus_bot"}, "new_chat_participant" => %{"first_name" => "Dublin Bus Bot", "id" => 239397, "username" => "dublin_bus_bot"}}, "update_id" => 35283})
 
 
+  end
+
+  test "messages without commands are handled by the default_handler" do
+    {:ok, {:default, "not a command"}} = make_message("not a command")
+    |> TestAPI6.entry_point
   end
 
   test "handling message with callback_data" do
