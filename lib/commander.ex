@@ -121,7 +121,7 @@ defmodule Commander do
       defp __handler(chat_id, text, update) do
         Logger.info("Dispatching '#{text}' #{inspect(update)}")
         try do
-          {:ok, __dispatch(chat_id, String.strip(text ||""), update)}
+          {:ok, __dispatch(chat_id, String.trim(text ||""), update)}
         rescue
           e -> __rescue(chat_id, e, text)
         end
